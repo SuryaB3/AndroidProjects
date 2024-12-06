@@ -1,0 +1,99 @@
+package com.example.myapplication;
+
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.util.AttributeSet;
+import android.view.View;
+
+import java.util.Calendar;
+
+public class ClockView extends View {
+    private Paint paint;       // Paint object for drawing the clock face
+    private Calendar calendar; // Calendar to get the current time
+
+    // Constructor
+    public ClockView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        paint = new Paint();               // Initialize paint object
+        calendar = Calendar.getInstance(); // Initialize calendar to fetch current time
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        // Get width and height of the custom view
+        float width = getWidth();
+        float height = getHeight();
+
+        // Calculate center point
+        float centerX = width / 2;
+        float centerY = height / 2;
+
+        // Define the radius of the clock (90% of the smaller dimension)
+        float radius = (Math.min(width, height) / 2) * 0.9f;
+
+        // Draw outer circle (the clock face)
+        paint.setStyle(Paint.Style.STROKE);      // Set to STROKE for a circular outline
+        paint.setStrokeWidth(8f);                // Set stroke width for the clock's circle
+        paint.setColor(Color.WHITE);             // Set the color to black
+        canvas.drawCircle(centerX, centerY, radius, paint);
+
+        // Draw hour markings (numbers 1 to 12)
+        paint.setStyle(Paint.Style.FILL);        // Set to FILL for the text markings
+        paint.setTextSize(radius / 8);           // Set the text size relative to the radius
+        for (int i = 1; i <= 12; i++) {
+            double angle = Math.toRadians(i * 30 - 90); // Convert degrees to radians
+            float x = (float) (centerX + radius * 0.8 * Math.cos(angle)); // X coordinate for the number
+            float y = (float) (centerY + radius * 0.8 * Math.sin(angle)); // Y coordinate for the number
+            canvas.drawText(String.valueOf(i), x - paint.measureText(String.valueOf(i)) / 2, y + paint.getTextSize() / 3, paint);
+        }
+
+        // Get the current time
+        calendar.setTimeInMillis(System.currentTimeMillis()); // Get the current system time
+        int hours = calendar.get(Calendar.HOUR); // Get the current hour
+        int minutes = calendar.get(Calendar.MINUTE); // Get the current minute
+        int seconds = calendar.get(Calendar.SECOND); // Get the current second
+
+        // Draw the hour hand
+        double hourAngle = Math.toRadians(hours * 30 + minutes * 0.5 - 90); // Hour hand angle calculation
+        float hourHandLength = radius * 0.5f; // Length of the hour hand
+        paint.setColor(Color.BLUE); // Color for the hour hand
+        paint.setStrokeWidth(10f); // Thickness of the hour hand
+        canvas.drawLine(
+                centerX, centerY,
+                (float) (centerX + hourHandLength * Math.cos(hourAngle)),
+                (float) (centerY + hourHandLength * Math.sin(hourAngle)),
+                paint
+        );
+
+        // Draw the minute hand
+        double minuteAngle = Math.toRadians(minutes * 6 - 90); // Minute hand angle calculation
+        float minuteHandLength = radius * 0.7f; // Length of the minute hand
+        paint.setColor(Color.GREEN); // Color for the minute hand
+        paint.setStrokeWidth(6f); // Thickness of the minute hand
+        canvas.drawLine(
+                centerX, centerY,
+                (float) (centerX + minuteHandLength * Math.cos(minuteAngle)),
+                (float) (centerY + minuteHandLength * Math.sin(minuteAngle)),
+                paint
+        );
+
+        // Draw the second hand
+        double secondAngle = Math.toRadians(seconds * 6 - 90); // Second hand angle calculation
+        float secondHandLength = radius * 0.9f; // Length of the second hand
+        paint.setColor(Color.RED); // Color for the second hand
+        paint.setStrokeWidth(4f); // Thickness of the second hand
+        canvas.drawLine(
+                centerX, centerY,
+                (float) (centerX + secondHandLength * Math.cos(secondAngle)),
+                (float) (centerY + secondHandLength * Math.sin(secondAngle)),
+                paint
+        );
+
+        // Redraw the clock every second
+        postInvalidateDelayed(1000); // Calls onDraw again after 1000ms (1 second)
+    }
+}
